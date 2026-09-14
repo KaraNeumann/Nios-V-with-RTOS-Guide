@@ -42,7 +42,7 @@ Set the `Primary Computer ID` to the MAC address of your computer's main adapter
 
 You can find this by running `ipconfig /all` in your terminal
 ![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/LicencingCentre4.png)
-Select `Generate`
+Select `save` and then `Generate`
 
 You will receive an email with a file attached named `LR-XXXXXX_License.dat`. Download this file.
 
@@ -76,6 +76,7 @@ First you should create a new folder in the project folder named `projectFolder/
 
 Copy paste the `core_sdram_axi` folder from [here](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/tree/main/RequiredResources) into the `projectFolder/ip/` folder.
 In my example the folder hierarchy should look as follows:
+
 ![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/IPcoreFormat.png)
 
 ### 4.2 Opening the Platform Designer
@@ -94,7 +95,7 @@ This process may take a while, press `Close` when it is finished.
 At this point you should be able to see the custom imported SDRAM controller module in the IP Catalog.
 ![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/PlatformDesigner3.png)
 
-### Create Components
+### 4.3 Create Components
 
 To create the system you will need to add the following IP cores. For now leave all the settings at the default:
  - Clock In (included by default)
@@ -102,20 +103,19 @@ To create the system you will need to add the following IP cores. For now leave 
  - IOPLL
  - NIOS V/g General Purpose Processor
  - On-Chip Memory II
- - Avalon Memory Mapped Pipeline Bridge
  - JTAG UART
  - 3x PIO
- - SDRAM AXI4 (imported in the step above)
+ - SDRAM AXI4 (imported in section 4.1 above)
  - Interval Timer
 
-### Component Settings
+### 4.4 Component Settings
 
-Then the following settings need to be set.
+The following settings need to be set in the components.
 
-#### Clock Bridge Component
-In the System View set the `in_clk` Clock Input to export to `clk`
+#### 4.4.1 Clock Bridge Component
+In the System View check the `in_clk` Clock Input to export to `clk`.
 
-#### IOPLL Component
+#### 4.4.2 IOPLL Component
 **Under the PLL Tab**
 
 Set `General/Reference Clock Frequency` to `50`
@@ -137,49 +137,54 @@ Set `outclk2/Desired Phase Shift` to `125`
 
 Set `Physical PLL Settings / PLL Auto Rest` to `True`
 
-These settings should look as follows:
-<IMAGES>
+The IOPLL settings should look as follows:
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/iopll1.png)
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/iopll2.png)
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/iopll3.png)
 
 In the System View set the `outclk1` Clock Output to export to `sdram_clk`
 
-#### NIOS V/g General Purpose Processor Component
+#### 4.4.3 NIOS V/g General Purpose Processor Component
 Set `Debug/Enable Reset from Debug Mode` to `True`
 Set `Memory Configurations/Peripheral Regions/Peripheral Region A` to `512 KBytes`
 
+The NIOS V settings should look as follows:
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/nios1.png)
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/nios2.png)
 
-#### IOPLL Component
-**Under the PLL Tab**
-
-Set `General/Reference Clock Frequency` to `50`
-Set `General/Enable Locked Output Port` to `False`
-
-#### On-Chip Memory II Component
+#### 4.4.4 On-Chip Memory II Component
 Set `Size/Total Memory Size` to `524280`
 
-These settings should look as follows:
-<IMAGES>
+The Memory settings should look as follows:
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/memory.png)
 
-#### First PIO Component
+#### 4.4.5 First PIO Component
 
 Set the component name to `PIO_KEY`
-Set `Basic Settings/Width` to `2`
+Set `Basic Settings/Width` to `4`
 Set `Basic Settings/Direction` to `Input`
 Set `Edge Capture Register/Synchronous Capture` to `True`
 Set `Edge Capture Register/Edge Type` to `ANY`
 Set `Interrupt/Generate IRQ` to `True`
 Set `Interrupt/IRQ Type` to `EDGE`
 
+The KEY PIO settings should look as follows:
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/pio_key.png)
+
 In the System View set the `external_connection` Conduit to export to `key_external_connection`
 
-#### Second PIO Component
+#### 4.4.6 Second PIO Component
 
 Set the component name to `PIO_LEDR`
 Set `Basic Settings/Width` to `10`
 Set `Basic Settings/Direction` to `Output`
 
+The KEY PIO settings should look as follows:
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/pio_ledr.png)
+
 In the System View set the `external_connection` Conduit to export to `ledr_external_connection`
 
-#### Third PIO Component
+#### 4.4.7 Third PIO Component
 
 Set the component name to `PIO_SW`
 Set `Basic Settings/Width` to `10`
@@ -189,35 +194,41 @@ Set `Edge Capture Register/Edge Type` to `ANY`
 Set `Interrupt/Generate IRQ` to `True`
 Set `Interrupt/IRQ Type` to `EDGE`
 
+The KEY PIO settings should look as follows:
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/pio_sw.png)
+
 In the System View set the `external_connection` Conduit to export to `sw_external_connection`
 
-#### SDRAM AXI4 Component
+#### 4.4.8 SDRAM AXI4 Component
 In the System View set the `sdram` Conduit to export to `sdram`
 
 
-#### Interval Timer Component
+#### 4.4.9 Interval Timer Component
 Set the component name to `sys_clk`
-NB: if this is not set to exactly the correct name, the RTOS won't recognise it
+**NB: if this is not set to exactly the correct name, FreeRTOS won't recognise it later**
 
-### Component Connections
+### 4.5 Component Connections
 
-Make all the component connections as shown:
-<IMAGE>
+Make all the component connections as shown in the image below:
 Set the IRQ numbers as follows:
  - `sys_clk` = `IRQ 0`
  - `JTAG UART` = `IRQ 1`
  - `PIO_KEY` = `IRQ 2`
  - `PIO_SW` = `IRQ 3`
 
-### Final Steps and Generating HDL
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/connections1.png)
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/connections2.png)
 
-Select `System/Assign Base Addresses`
+### 4.6 Final Steps and Generating HDL
 
-Go to the Nios V component and change the following setting:
-Set `Traps, Exceptions, and Interrupts/reset Agent` to `intel_onchip_memory_0.s1`
+Select `System/Assign Base Addresses` from the top toolbar
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/assignBaseAddresses.png)
 
-The settings should be as follows:
-<IMAGE>
+Go to the Nios V component settings.
+Check that `Traps, Exceptions, and Interrupts/reset Agent` is set to `intel_onchip_memory_0.s1`
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/nios3.png)
+
+Select `Sync System Infos` at the bottom right corner.
 
 At this point there should be no errors or warnings.
 
