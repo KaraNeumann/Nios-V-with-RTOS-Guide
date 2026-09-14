@@ -23,3 +23,205 @@ This should require about 50 GB of space.
 ![Screencap of Quartus download settings](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/InstallSettings.png)
 
 While you are waiting for this to download, you can set up the licencing.
+
+### 2.2 Altera Licensing
+Go to the [Altera SSLC](https://www.altera.com/SSLC) and register an account.
+
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/LicencingCentre1.png)
+
+Once you've logged in, select `Sign up for Evaluation or No-Cost Licences`.
+Select the Agilex 3 licence and `next`
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/LicensingCentre2.png)
+
+Select `Create a New Computer`
+Set the `Computer Name` to whatever you want e.g. "Kara's laptop"
+Set the `Licence Type` to `FIXED`
+Set the `Computer Type` to `NIC ID`
+Set the `Primary Computer ID` to the MAC address of your computer's main adapter.
+![](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/LicencingCentre3.png)
+
+You can find this by running `ipconfig /all` in your terminal
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/LicencingCentre4.png)
+Select `Generate`
+
+You will receive an email with a file attached named `LR-XXXXXX_License.dat`. Download this file.
+
+Launch Quartus. If this is the first time you've opened quartus you will need to go to `Tools/License Setup` and set the Licence File to the `LR-XXXXXX_License.dat` file.
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/LicenceSetup.png)
+
+## 3 Project Setup
+### 3.1 Project Creation
+Select `File/new Project Wizard`
+Choose a directory and a name for the project, and then press `Next`. I highly recommend choosing a path with no spaces on a local directory (not on a onedrive or dropbox folder etc).
+
+For this example I've named my project `FreertosGuide`
+
+Set the device to `A3CZ135BB18AE7S`.
+All the other settings can be left as the default settings.
+
+### 3.2 Pin Assignments
+`Select Assignments/Device` and check the device is set to `A3CZ135BB18AE7S`
+`Select Assignments/Import Assignments` and import the [DE23-Lite Pin Assignment file](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/RequiredResources/DE_23_Pin_Assignments.csv) which is taken from the [Terasic Resource Package](https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=44&No=1383&PartNo=4#contents). You should now be able to see the pin assignments under `Assignments/Pin Planner`
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/PinPlanner.png)
+
+
+
+
+## 4 Platform Designer
+### 4.1 Adding SDRAM Controller IP 
+
+The SDRAM controller IP core was deprecated in a previous Quartus update, so we are going to use an open source substitute. This was one again taken from the [Terasic Resource Package](https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=44&No=1383&PartNo=4#contents).
+
+First you should create a new folder in the project folder named `projectFolder/ip/`
+
+Copy paste the `core_sdram_axi` folder from [here](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/tree/main/RequiredResources) into the `projectFolder/ip/` folder.
+In my example the folder hierarchy should look as follows:
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/IPcoreFormat.png)
+
+### 4.2 Opening the Platform Designer
+
+You can launch the Platform designer from `Tools/Platform Designer` or the shortcut on the tool bar.
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/PlatformDesignerShortcut.png)
+
+Make sure the `Quartus project` is set to the current project (as a `.qpf` file). Select the new page button to create a new Platform Designer System.
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/PlatformDesigner1.png)
+
+Choose a name in the default project directory and then select `Create`. For this example I've used `nios_system.qsys`
+The `Quartus Project` and `Platform Designer System` should both be green. Select `Create` again.
+This process may take a while, press `Close` when it is finished.
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/PlatformDesigner2.png)
+
+At this point you should be able to see the custom imported SDRAM controller module in the IP Catalog.
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/PlatformDesigner3.png)
+
+### Create Components
+
+To create the system you will need to add the following IP cores. For now leave all the settings at the default:
+ - Clock In (included by default)
+ - Reset In (included by default)
+ - IOPLL
+ - NIOS V/g General Purpose Processor
+ - On-Chip Memory II
+ - Avalon Memory Mapped Pipeline Bridge
+ - JTAG UART
+ - 3x PIO
+ - SDRAM AXI4 (imported in the step above)
+ - Interval Timer
+
+### Component Settings
+
+Then the following settings need to be set.
+
+#### Clock Bridge Component
+In the System View set the `in_clk` Clock Input to export to `clk`
+
+#### IOPLL Component
+**Under the PLL Tab**
+
+Set `General/Reference Clock Frequency` to `50`
+Set `General/Enable Locked Output Port` to `False`
+
+Set `Output Clocks/Number of Clocks` to `3`
+
+Set `outclk0/Desired Frequency` to `80`
+
+Set `outclk1/Desired Frequency` to `80`
+Set `outclk1/Phase Shift Units` to `degrees`
+Set `outclk1/Desired Phase Shift` to `-70`
+
+Set `outclk2/Desired Frequency` to `80`
+Set `outclk2/Phase Shift Units` to `degrees`
+Set `outclk2/Desired Phase Shift` to `125`
+
+**Under the Settings Tab**
+
+Set `Physical PLL Settings / PLL Auto Rest` to `True`
+
+These settings should look as follows:
+<IMAGES>
+
+In the System View set the `outclk1` Clock Output to export to `sdram_clk`
+
+#### NIOS V/g General Purpose Processor Component
+Set `Debug/Enable Reset from Debug Mode` to `True`
+Set `Memory Configurations/Peripheral Regions/Peripheral Region A` to `512 KBytes`
+
+
+#### IOPLL Component
+**Under the PLL Tab**
+
+Set `General/Reference Clock Frequency` to `50`
+Set `General/Enable Locked Output Port` to `False`
+
+#### On-Chip Memory II Component
+Set `Size/Total Memory Size` to `524280`
+
+These settings should look as follows:
+<IMAGES>
+
+#### First PIO Component
+
+Set the component name to `PIO_KEY`
+Set `Basic Settings/Width` to `2`
+Set `Basic Settings/Direction` to `Input`
+Set `Edge Capture Register/Synchronous Capture` to `True`
+Set `Edge Capture Register/Edge Type` to `ANY`
+Set `Interrupt/Generate IRQ` to `True`
+Set `Interrupt/IRQ Type` to `EDGE`
+
+In the System View set the `external_connection` Conduit to export to `key_external_connection`
+
+#### Second PIO Component
+
+Set the component name to `PIO_LEDR`
+Set `Basic Settings/Width` to `10`
+Set `Basic Settings/Direction` to `Output`
+
+In the System View set the `external_connection` Conduit to export to `ledr_external_connection`
+
+#### Third PIO Component
+
+Set the component name to `PIO_SW`
+Set `Basic Settings/Width` to `10`
+Set `Basic Settings/Direction` to `Input`
+Set `Edge Capture Register/Synchronous Capture` to `True`
+Set `Edge Capture Register/Edge Type` to `ANY`
+Set `Interrupt/Generate IRQ` to `True`
+Set `Interrupt/IRQ Type` to `EDGE`
+
+In the System View set the `external_connection` Conduit to export to `sw_external_connection`
+
+#### SDRAM AXI4 Component
+In the System View set the `sdram` Conduit to export to `sdram`
+
+
+#### Interval Timer Component
+Set the component name to `sys_clk`
+NB: if this is not set to exactly the correct name, the RTOS won't recognise it
+
+### Component Connections
+
+Make all the component connections as shown:
+<IMAGE>
+Set the IRQ numbers as follows:
+ - `sys_clk` = `IRQ 0`
+ - `JTAG UART` = `IRQ 1`
+ - `PIO_KEY` = `IRQ 2`
+ - `PIO_SW` = `IRQ 3`
+
+### Final Steps and Generating HDL
+
+Select `System/Assign Base Addresses`
+
+Go to the Nios V component and change the following setting:
+Set `Traps, Exceptions, and Interrupts/reset Agent` to `intel_onchip_memory_0.s1`
+
+The settings should be as follows:
+<IMAGE>
+
+At this point there should be no errors or warnings.
+
+Select `Generate HDL` at the bottom right corner, and then `Generate`. Make sure to save your system.
+This process may take a few minutes.
+
+After that finishes you can close the Platform Designer.
