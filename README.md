@@ -437,5 +437,6 @@ Swap back to the NIOS Terminal, and you should see the print message.
 **NB: You must manually terminate the program, otherwise you will not be able to rerun a new program.**
 To do this you must go to the Ashling Software terminal, right click on the terminal, and select `Terminate/Disconnect All`
 
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/riscfree10.png)
 
 
