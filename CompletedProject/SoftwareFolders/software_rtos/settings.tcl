@@ -1,0 +1,1 @@
+set_setting hal.enable_reduced_device_drivers true
