@@ -575,3 +575,4 @@ https://www.freertos.org
 [Nios V Embedded Processor Design Handbook](https://docs.altera.com/r/docs/726952/26.1.1/nios-v-embedded-processor-design-handbook/about-the-nios-v-embedded-processor)
 [Hello World - Nios V video](https://www.youtube.com/watch?v=c6t-MVQ_j8Y)
 [Hello Nios using FreeRTOS video](https://www.youtube.com/watch?v=uVQmrPffRhU)
+[Terasic Resource Package](https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=44&No=1383&PartNo=4#contents)
