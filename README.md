@@ -1,7 +1,9 @@
-# DE-23 Lite Nios V with RTOS Guide
-
+# Guide for implementing NIOS-V FreeRTOS on the DE23-LITE Board
 ## 1 Introduction
-This is a step by step guide for running [FreeRTOS](https://www.freertos.org/) on the [Terasic DE-23 Lite FPGA Board](https://www.terasic.com.tw/cgi-bin/page/archive.pl?No=1383).
+This is a step by step guide for running [FreeRTOS](https://www.freertos.org/) on the [Terasic DE-23 Lite FPGA Board](https://www.terasic.com.tw/cgi-bin/page/archive.pl?No=1383). It was compiled by Kara Neumann, along with NAME, NAME, NAME, NAME.
+
+This repo also includes the full [archived quartus project](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/tree/main/CompletedProject/ArchivedQuartusProject), along with the [software folders](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/tree/main/CompletedProject/SoftwareFolders). Note that only the modified files are included in the software folders, all the rest should be generated using Section 7.
+
 
 
 ## 2 Installing Software and Licensing
@@ -320,7 +322,6 @@ The second section(7.2) will implement the full RTOS system and demonstrate it.
 ### 7.1 Software - HAL
 The first step is to run a basic print script to test the NIOS V Processor.
 
-
 #### 7.1.1 Creating the File Structure
 In the main project directory you should create a `software` folder. Inside there should be 2 folders.
 
@@ -375,7 +376,7 @@ Right click on the Project explorer pane, select `Import Nios V CMake project`, 
 ![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/riscfree2.png)
 
 
-Your Project Exploer should look something like this:
+Your Project Explorer should look something like this:
 
 ![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/riscfree3.png)
 
@@ -440,3 +441,137 @@ To do this you must go to the Ashling Software terminal, right click on the term
 ![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/riscfree10.png)
 
 
+### 7.2 Software - FreeRTOS
+The next step is to setup the full FreeRTOS system.
+
+Before starting this section you should close Ashling RiscFree IDE and any NIOS terminals from Section 7.1.
+
+
+#### 7.2.1 Creating the File Structure
+In the main project directory you should create a `software_rtos` folder. Inside there should be 2 folders, and 1 file.
+
+ - A `bsp` folder which is empty.
+ - A `app` folder which contains a blank file called `rtos.c`
+ - A file named `setting.tcl`
+
+The file hierarchy should look as follows:
+
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/rtos1.png)
+
+The `settings.tcl` script should contain the following:
+```
+set_setting hal.enable_reduced_device_drivers true
+
+
+```
+This is a custom command which modifies the drivers using in the JTAG, becasue the default drivers do not print at all.
+
+
+#### 7.2.2 Setup the Project
+Launch the NIOS V Terminal. This can be found in the Quartus program files, which is my case is `C:\altera_pro\26.1\niosv\bin\niosv-shell.exe`
+
+Navigate in the NIOS terminal to the `software_rtos` folder you created.
+
+In order to generate the BSP, you should run the following command in the NIOS terminal:
+
+`> niosv-bsp -c -t=freertos -p=../FreertosGuide.qpf -s=../nios_system.qsys -x=settings.tcl bsp/settings.bsp`
+
+ - `-p=` should be set to the path of the quartus project file
+ - `-s=` should be set to the path of the Platform Designer system
+ - `-x=` should set a custom script to also be run while creating the bsp
+ - The last argument should be the location where the bsp file will be saved, which should be in the `bsp` folder
+
+In addition to the usual bsp files, there should also be a `.../bsp/FREERTOS/` directory.
+
+
+Next run the following command on the NIOS terminal, which creates the CMAKE file for the application:
+`> niosv-app -a=app -b=bsp -s=app/rtos.c`
+ - `-a` should be set to the path of the Application folder
+ - `-b` should be set to the path of the BSP folder
+ - `-s` should be set to the path of the source file you created earlier
+
+This will generate a `CMakeLists.txt` file in the `./app/` directory. 
+
+Next, you need to manually add a FreeRTOS config line. Open the file `.../software_rtos/bsp/FREERTOS/inc/FreeRTOSConfig.h` and add `#define configISR_STACK_SIZE_WORDS 512` to the top of the config file.
+
+The first few lines should look something like this:
+
+```
+...
+#ifndef FREERTOS_CONFIG_H
+#define FREERTOS_CONFIG_H
+
+#define configISR_STACK_SIZE_WORDS 512
+
+
+#include "sys/alt_tls.h"
+
+#include "system.h"
+#include "os_cpu.h"
+...
+
+```
+
+
+
+Next, open the Ashling RiscFree IDE. You can do this either by running `> riscfree` in the NIOS V terminal, or running the application which on my system is at: `C:\altera_pro\26.1\riscfree\RiscFree.exe`
+
+This will open a window that asks for the workspace directory. Set the directory to the `/software/` older, and select `Launch`
+
+
+Once the software opens, select `Import Nios V CMake project` from the Project Explorer on the left.
+Set the location to the `./app/` folder and the name to `app`, and select `Finish`.
+
+Right click on the Project explorer pane, select `Import Nios V CMake project`, and repeat this process for the `./bsp folder`
+
+#### 7.2.3 Writing the Script and Building the Project
+
+Open the `rtos.c` script and add the code from[here](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/RequiredResources/rtos.c)
+
+This script will test all the basic functionality of the RTOS. It initialises 2 tasks:
+- Task 1 reads the values of the values of the SW every second and saves it to the SDRAM.
+- Task 2 reads the value from the SDRAM and outputs them to the LEDR
+
+Additonally, an interrupt is generated each time the KEY changes. Note that this will trigger once when the button is pressed and once when it is depressed.
+
+
+Save this file. Fight click on the app folder in the Project Explorer pane and select `Build Project`. Once this is finished you should have a `.../app/build/Default/app.elf` file generated.
+
+#### 7.2.4 Running the Script
+
+Go back to the NIOS Terminal and run the following command:
+`> jtag-uart`
+
+Keep this terminal window open in the background, this is where the output messages will be displayed.
+
+Go back to the Ashling RiscFree software. Right click on the `./app/` folder and select `Run As/2 Ashling RISC-V Hardware Debugging`
+
+Set the local application to `app.elf`
+
+This will open up the `Edit Configuration` window.
+Check the `Main/Project` is set to `app`
+Check sure the `Main/C/C++ Application` is set to `build/Default/app.elf`
+
+Check the `Debugger/Debug Probe Configuration/Debug Probe` is set to `DE23-Lite [USB-X]`
+
+Select `Debugger/Target Configuration/Auto-detect Scan Chain` This should automatically populate the `Device/TAP selection` and `Core Selection`
+
+Select `Apply` and then `Run`
+
+Swap back to the NIOS Terminal, and the output should look something like this:
+![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/rtosOutput.png)
+
+
+**NB: You must manually terminate the program, otherwise you will not be able to rerun a new program.**
+To do this you must go to the Ashling Software terminal, right click on the terminal, and select `Terminate/Disconnect All`
+
+## 8 References
+
+Thank you James Salamy for all your help with this project.
+
+The following resources were used to create this guide:
+https://www.freertos.org
+[Altera Embedded Peripherals IP User Guide](https://docs.altera.com/r/docs/683130/24.1/embedded-peripherals-ip-user-guide/download-document)
+[Nios V Embedded Processor Design Handbook](https://docs.altera.com/r/docs/726952/26.1.1/nios-v-embedded-processor-design-handbook/about-the-nios-v-embedded-processor)
+[Hello World - Nios V video](https://www.youtube.com/watch?v=c6t-MVQ_j8Y)
+[Hello Nios using FreeRTOS video](https://www.youtube.com/watch?v=uVQmrPffRhU)
