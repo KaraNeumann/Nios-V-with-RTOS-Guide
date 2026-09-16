@@ -1,6 +1,6 @@
 # Guide for implementing NIOS-V FreeRTOS on the DE23-LITE Board
 ## 1 Introduction
-This is a step by step guide for running [FreeRTOS](https://www.freertos.org/) on the [Terasic DE-23 Lite FPGA Board](https://www.terasic.com.tw/cgi-bin/page/archive.pl?No=1383). It was compiled by Kara Neumann, along with NAME, NAME, NAME, NAME.
+This is a step by step guide for running [FreeRTOS](https://www.freertos.org/) on the [Terasic DE-23 Lite FPGA Board](https://www.terasic.com.tw/cgi-bin/page/archive.pl?No=1383). It was compiled by Kara Neumann, along with NAME, Christian Bruton, NAME, Zoltan Earnshaw.
 
 This repo also includes the full [archived quartus project](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/tree/main/CompletedProject/ArchivedQuartusProject), along with the [software folders](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/tree/main/CompletedProject/SoftwareFolders). Note that only the modified files are included in the software folders, all the rest should be generated using Section 7.
 
@@ -39,10 +39,14 @@ Select the Agilex 3 licence and `next`
 ![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/LicensingCentre2.png)
 
 Select `Create a New Computer`
+
 Set the `Computer Name` to whatever you want e.g. "Kara's laptop"
+
 Set the `Licence Type` to `FIXED`
+
 Set the `Computer Type` to `NIC ID`
-Set the `Primary Computer ID` to the MAC address of your computer's main adapter.
+
+Set the `Primary Computer ID` to the MAC address of your computer's main adapter. NB: unlike the image, you should not include the hyphens(-) e.g. `F4A47543FE3F`
 
 ![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/LicencingCentre3.png)
 
@@ -54,22 +58,25 @@ Select `save` and then `Generate`
 
 You will receive an email with a file attached named `LR-XXXXXX_License.dat`. Download this file.
 
-Launch Quartus. If this is the first time you've opened quartus you will need to go to `Tools/License Setup` and set the Licence File to the `LR-XXXXXX_License.dat` file.
+Launch Quartus. If this is the first time you've opened quartus a window should pop up telling you a licence is required. Select `License Setup` and set the Licence File to the `LR-XXXXXX_License.dat` file. You can also find this under `Tools/License Setup`
 
 ![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/LicenceSetup.png)
 
 ## 3 Project Setup
 ### 3.1 Project Creation
 Select `File/new Project Wizard`
+
 Choose a directory and a name for the project, and then press `Next`. I highly recommend choosing a path with no spaces on a local directory (not on a onedrive or dropbox folder etc).
 
 For this example I've named my project `FreertosGuide`
 
 Set the device to `A3CZ135BB18AE7S`.
+
 All the other settings can be left as the default settings.
 
 ### 3.2 Pin Assignments
 `Select Assignments/Device` and check the device is set to `A3CZ135BB18AE7S`
+
 `Select Assignments/Import Assignments` and import the [DE23-Lite Pin Assignment file](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/RequiredResources/DE_23_Pin_Assignments.csv) which is taken from the [Terasic Resource Package](https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=44&No=1383&PartNo=4#contents). You should now be able to see the pin assignments under `Assignments/Pin Planner`
 
 ![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/PinPlanner.png)
@@ -80,9 +87,9 @@ All the other settings can be left as the default settings.
 ## 4 Platform Designer
 ### 4.1 Adding SDRAM Controller IP 
 
-The SDRAM controller IP core was deprecated in a previous Quartus update, so we are going to use an open source substitute. This was one again taken from the [Terasic Resource Package](https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=44&No=1383&PartNo=4#contents).
+The SDRAM controller IP core was deprecated in a previous Quartus update, so we are going to use an open source substitute. This was once again taken from the [Terasic Resource Package](https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=44&No=1383&PartNo=4#contents).
 
-First you should create a new folder in the project folder named `projectFolder/ip/`
+First you should create a new folder in the project folder named `<projectFolder>/ip/`
 
 Copy paste the `core_sdram_axi` folder from [here](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/tree/main/RequiredResources) into the `projectFolder/ip/` folder.
 In my example the folder hierarchy should look as follows:
@@ -99,6 +106,7 @@ Make sure the `Quartus project` is set to the current project (as a `.qpf` file)
 ![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/PlatformDesigner1.png)
 
 Choose a name in the default project directory and then select `Create`. For this example I've used `nios_system.qsys`
+
 The `Quartus Project` and `Platform Designer System` should both be green. Select `Create` again.
 This process may take a while, press `Close` when it is finished.
 
@@ -282,9 +290,12 @@ After that finishes you can close the Platform Designer.
 ## 5 Creating the Top Level File
 Go back to the base Quartus Prime Pro software and select `File/New` and choose `Verilog HDL File`.
 
-I've modified the existing Terasic Golden Top File from  the [Terasic Resource Package](https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=44&No=1383&PartNo=4#contents) to instantiate a version of our system. You can copy this file from <LINK>.
+I've modified the existing Terasic Golden Top File from  the [Terasic Resource Package](https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=44&No=1383&PartNo=4#contents) to instantiate a version of our system. You can copy this file from [here](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/RequiredResources/FreertosGuide.v).
+
 Make sure the file name matches your project name and the module name on line 34.
+
 Make sure the ip core names all match the instantiation definition in lines 105-122, otherwise the compilation will fail.
+
 You can find the ip core names here: `/<ProjectFolder>/<SystemName>/synth/<SystemName>.v` which in my case is `.../FreertosGuide/nios_system/synth/nios_system.v`.
 
 
@@ -317,7 +328,7 @@ All the FPGA lights should stop cycling through the preset pattern, which indica
 ## 7 Verilog and Programming
 
 This section will be divided into 2 parts. The first section (7.1) will implement a basic HAL test involving printing to the console.
-The second section(7.2) will implement the full RTOS system and demonstrate it.
+The second section (7.2) will implement the full RTOS system and demonstrate it.
 
 ### 7.1 Software - HAL
 The first step is to run a basic print script to test the NIOS V Processor.
@@ -350,21 +361,19 @@ In order to generate the BSP, you should run the following command in the NIOS t
 This should generate a whole bunch of files in the `/bsp/` directory, including a `settings.bsp` file.
 
 Next run the following command on the NIOS terminal, which creates the CMAKE file for the application:
+
 `> niosv-app -a=app -b=bsp -s=app/helloWorld.c`
 
  - `-a` should be set to the path of the Application folder
  - `-b` should be set to the path of the BSP folder
  - `-s` should be set to the path of the source file you created earlier
 
-![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/generateBsp.png)
-
-
 This will generate a `CMakeLists.txt` file in the `./app/` directory. 
 
 
-Next, open the Ashling RiscFree IDE. You can do this either by running `> riscfree` in the NIOS V terminal, or running the application which on my system is at: `C:\altera_pro\26.1\riscfree\RiscFree.exe`
+Next, open the Ashling RiscFree IDE. You can do this either by running `> riscfree` in the NIOS V terminal, or running the application which on my system is at: `C:\altera_pro\26.1\riscfree\RiscFree\RiscFree.exe`
 
-This will open a window that asks for the workspace directory. Set the directory to the `/software/` older, and select `Launch`
+This will open a window that asks for the workspace directory. Set the directory to the `/software/` folder, and select `Launch`
 
 ![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/riscfree1.png)
 
@@ -402,22 +411,23 @@ Save this file. Fight click on the app folder in the Project Explorer pane and s
 #### 7.1.4 Running the Script
 
 Go back to the NIOS Terminal and run the following command:
-`> jtag-uart`
+
+`> juart-terminal`
 
 Keep this terminal window open in the background, this is where the output messages will be displayed.
 
 ![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/riscfree5.png)
 
-Go back to the Ashling RiscFree software. Right click on the `./app/` folder and select `Run As/2 Ashling RISC-V Hardware Debugging`
+Go back to the Ashling RiscFree software. Right click on the `./app/` folder and select `Run As/3 Ashling RISC-V Hardware Debugging`
 
 ![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/riscfree6.png)
 
 
 Set the local application to `app.elf`
 
-This will open up the `Edit Cpnfiguration` window.
+This will open up the `Edit Configuration` window.
 Check the `Main/Project` is set to `app`
-Check sure the `Main/C/C++ Application` is set to `build/Default/app.elf`
+Check sure the `Main/'C/C++ Application'` is set to `build/Default/app.elf`
 
 ![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/riscfree7.png)
 
@@ -436,6 +446,7 @@ Swap back to the NIOS Terminal, and you should see the print message.
 
 
 **NB: You must manually terminate the program, otherwise you will not be able to rerun a new program.**
+
 To do this you must go to the Ashling Software terminal, right click on the terminal, and select `Terminate/Disconnect All`
 
 ![alt text](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/Images/riscfree10.png)
@@ -464,7 +475,7 @@ set_setting hal.enable_reduced_device_drivers true
 
 
 ```
-This is a custom command which modifies the drivers using in the JTAG, becasue the default drivers do not print at all.
+This is a custom command which modifies the drivers using in the JTAG, because the default drivers do not print at all.
 
 
 #### 7.2.2 Setup the Project
@@ -485,6 +496,7 @@ In addition to the usual bsp files, there should also be a `.../bsp/FREERTOS/` d
 
 
 Next run the following command on the NIOS terminal, which creates the CMAKE file for the application:
+
 `> niosv-app -a=app -b=bsp -s=app/rtos.c`
  - `-a` should be set to the path of the Application folder
  - `-b` should be set to the path of the BSP folder
@@ -516,7 +528,7 @@ The first few lines should look something like this:
 
 Next, open the Ashling RiscFree IDE. You can do this either by running `> riscfree` in the NIOS V terminal, or running the application which on my system is at: `C:\altera_pro\26.1\riscfree\RiscFree.exe`
 
-This will open a window that asks for the workspace directory. Set the directory to the `/software/` older, and select `Launch`
+This will open a window that asks for the workspace directory. Set the directory to the `/software/` folder, and select `Launch`
 
 
 Once the software opens, select `Import Nios V CMake project` from the Project Explorer on the left.
@@ -526,11 +538,11 @@ Right click on the Project explorer pane, select `Import Nios V CMake project`, 
 
 #### 7.2.3 Writing the Script and Building the Project
 
-Open the `rtos.c` script and add the code from[here](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/RequiredResources/rtos.c)
+Open the `rtos.c` script and add the code from [here](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/blob/main/RequiredResources/rtos.c)
 
 This script will test all the basic functionality of the RTOS. It initialises 2 tasks:
-- Task 1 reads the values of the values of the SW every second and saves it to the SDRAM.
-- Task 2 reads the value from the SDRAM and outputs them to the LEDR
+- Task 1 reads the value of the SW and saves it to the SDRAM every 1 second
+- Task 2 reads the value from the SDRAM and outputs them to the LEDR every 2 seconds
 
 Additonally, an interrupt is generated each time the KEY changes. Note that this will trigger once when the button is pressed and once when it is depressed.
 
@@ -540,11 +552,12 @@ Save this file. Fight click on the app folder in the Project Explorer pane and s
 #### 7.2.4 Running the Script
 
 Go back to the NIOS Terminal and run the following command:
-`> jtag-uart`
+
+`> juart-terminal`
 
 Keep this terminal window open in the background, this is where the output messages will be displayed.
 
-Go back to the Ashling RiscFree software. Right click on the `./app/` folder and select `Run As/2 Ashling RISC-V Hardware Debugging`
+Go back to the Ashling RiscFree software. Right click on the `./app/` folder and select `Run As/3 Ashling RISC-V Hardware Debugging`
 
 Set the local application to `app.elf`
 
@@ -570,9 +583,9 @@ To do this you must go to the Ashling Software terminal, right click on the term
 Thank you James Salamy for all your help with this project.
 
 The following resources were used to create this guide:
-https://www.freertos.org
-[Altera Embedded Peripherals IP User Guide](https://docs.altera.com/r/docs/683130/24.1/embedded-peripherals-ip-user-guide/download-document)
-[Nios V Embedded Processor Design Handbook](https://docs.altera.com/r/docs/726952/26.1.1/nios-v-embedded-processor-design-handbook/about-the-nios-v-embedded-processor)
-[Hello World - Nios V video](https://www.youtube.com/watch?v=c6t-MVQ_j8Y)
-[Hello Nios using FreeRTOS video](https://www.youtube.com/watch?v=uVQmrPffRhU)
-[Terasic Resource Package](https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=44&No=1383&PartNo=4#contents)
+- https://www.freertos.org
+- [Altera Embedded Peripherals IP User Guide](https://docs.altera.com/r/docs/683130/24.1/embedded-peripherals-ip-user-guide/download-document)
+- [Nios V Embedded Processor Design Handbook](https://docs.altera.com/r/docs/726952/26.1.1/nios-v-embedded-processor-design-handbook/about-the-nios-v-embedded-processor)
+- [Hello World - Nios V video](https://www.youtube.com/watch?v=c6t-MVQ_j8Y)
+- [Hello Nios using FreeRTOS video](https://www.youtube.com/watch?v=uVQmrPffRhU)
+- [Terasic Resource Package](https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=44&No=1383&PartNo=4#contents)
