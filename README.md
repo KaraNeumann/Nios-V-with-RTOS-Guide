@@ -1,6 +1,6 @@
 # Guide for implementing NIOS-V FreeRTOS on the DE23-LITE Board
 ## 1 Introduction
-This is a step by step guide for running [FreeRTOS](https://www.freertos.org/) on the [Terasic DE-23 Lite FPGA Board](https://www.terasic.com.tw/cgi-bin/page/archive.pl?No=1383). It was compiled by Kara Neumann, along with NAME, Christian Bruton, NAME, Zoltan Earnshaw.
+This is a step by step guide for running [FreeRTOS](https://www.freertos.org/) on the [Terasic DE-23 Lite FPGA Board](https://www.terasic.com.tw/cgi-bin/page/archive.pl?No=1383). It was compiled by Kara Neumann, along with Ben Apsey, Christian Bruton, Joel Kruger, Zoltan Earnshaw.
 
 This repo also includes the full [archived quartus project](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/tree/main/CompletedProject/ArchivedQuartusProject), along with the [software folders](https://github.com/KaraNeumann/Nios-V-with-RTOS-Guide/tree/main/CompletedProject/SoftwareFolders). Note that only the modified files are included in the software folders, all the rest should be generated using Section 7.
 
